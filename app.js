@@ -9,6 +9,7 @@ const graphqlSchema = require("./graphql/schema");
 const graphqlResolver = require("./graphql/resolvers");
 const { graphqlHTTP } = require("express-graphql");
 const auth = require("./middleware/auth");
+const { clearImage } = require("./util/file");
 
 // const feedRoutes = require("./routes/feed");
 // const authRoutes = require("./routes/auth");
@@ -61,6 +62,22 @@ app.use((req, res, next) => {
 // app.use("/auth", authRoutes);
 
 app.use(auth);
+
+app.put("/post-image", (req, res, next) => {
+  if (!req.isAuth) {
+    throw new Error("Not authenticated!");
+  }
+  if (!req.file) {
+    return res.status(200).json({ message: "No file provided!" });
+  }
+  if (req.body.oldPath) {
+    clearImage(req.body.oldPath);
+  }
+  console.log(req.file);
+  return res
+    .status(201)
+    .json({ message: "File stored.", filePath: req.file.path });
+});
 
 app.use(
   "/graphql",
